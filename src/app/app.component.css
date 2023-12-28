@@ -1,0 +1,13 @@
+form {
+    border: 1px solid #DEE2E6;
+    border-radius: 20px;
+    width: 30%;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    position: absolute;
+}
+
+.formpd {
+    padding: 30px;
+}

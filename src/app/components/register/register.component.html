@@ -1,0 +1,23 @@
+<div>
+  <form [formGroup]="registerForm">
+    <div class="inputClass">
+      <input type="text" formControlName="name" placeholder="Ad" />
+    </div>
+    <div class="inputClass">
+        <input type="text" formControlName="surname" placeholder="Soyad" />
+      </div>
+      <div class="inputClass">
+        <input type="email" formControlName="email" placeholder="email" />
+      </div>
+      <div class="inputClass">
+        <input type="text" formControlName="tcid" placeholder="Tc" />
+      </div>
+      <div class="inputClass">
+        <input type="password" formControlName="password" placeholder="pass" />
+      </div>
+      <div class="inputClass">
+        <input type="password" formControlName="confirmPassword" placeholder="conpass" />
+      </div>
+      <button type="submit" (click)="register()">Kayıt Ol</button>
+  </form>
+</div>

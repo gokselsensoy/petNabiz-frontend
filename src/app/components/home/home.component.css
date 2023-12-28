@@ -1,0 +1,32 @@
+.navlogo {
+    padding: 30px 0px 0px 30px;
+}
+
+.navlogo h1 {
+    font-size: 3.2rem;
+    font-family: 'Poppins', sans-serif;
+}
+
+.navbar {
+    background-color: #5573aa   ;
+    height: 992px;
+    display: block;
+    width: 15%;
+}
+
+.navbar ul {
+    padding: 30px;
+    font-size: 1.8rem;
+    font-family: 'Poppins', sans-serif;
+}
+
+.navbar li {
+    padding-bottom: 20px;
+}
+
+.divider {
+    height: 1px;
+    max-width: 600px;
+    margin: 5px auto;
+    color:#BA9A6C;
+}

@@ -1,0 +1,20 @@
+<div>
+  <nav class="navbar">
+    <div class="navlogo">
+      <h1>Petnabız</h1>
+    </div>
+    <hr class="divider">
+    <ul>
+      <li>Kliniğim</li>
+      <li>Veterinerim</li>
+      <li>Muayenelerim</li>
+      <li>Evcil hayvalarım</li>
+      <li>Klinik Değiştir</li>
+      <li>Klinik Değiştir</li>
+      <div *ngFor="let veterinaryClinic of veterinaryClinics">
+        <h1>{{veterinaryClinic}}</h1>
+        </div>
+    </ul>
+
+  </nav>
+</div>
