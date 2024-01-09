@@ -2,9 +2,11 @@ import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { User } from 'src/app/models/entities/user';
+import { UserForLogin } from 'src/app/models/entities/userForLogin';
 import { UserInfo } from 'src/app/models/entities/userInfo';
 import { VeterinaryClinic } from 'src/app/models/entities/veterinaryClinic';
 import { AuthService } from 'src/app/services/auth.service';
+import { LocalStorageService } from 'src/app/services/local-storage.service';
 import { VeterinaryClinicService } from 'src/app/services/veterinary-clinic.service';
 
 @Component({
@@ -15,22 +17,25 @@ import { VeterinaryClinicService } from 'src/app/services/veterinary-clinic.serv
 export class LoginComponent implements OnInit {
   loginForm: FormGroup;
   veterinaryClinics: VeterinaryClinic[];
+  userInfo: UserInfo[];
+  currentUser: UserForLogin;
 
   constructor(
     private router: Router,
     private formBuilder: FormBuilder,
-    private authService: AuthService
+    private authService: AuthService,
+    private localStorage: LocalStorageService
   ) { }
 
   ngOnInit(): void {
     this.createLoginForm();
-    this.userInfo();
+
     
   }
 
   createLoginForm() {
     this.loginForm = this.formBuilder.group({
-      email: ['', Validators.required],
+      userName: ['', Validators.required],
       password: ['', Validators.required],
     })
   }
@@ -40,19 +45,38 @@ export class LoginComponent implements OnInit {
       let user = Object.assign({}, this.loginForm.value);
       this.authService.login(user).subscribe({
         next: (successResponse) => {
-          // this.router.navigate([""]);
-          console.log(successResponse)
+          if (successResponse.data && successResponse.data.token) {
+            this.localStorage.add("token", successResponse.data.token);
+            this.authService.isLoggedIn = true;
+            console.log(successResponse);
+            this.getCurrentUser();
+          } else {
+            // Token alınamadı veya hatalı bir yapı varsa
+            console.error("Invalid token structure in the response:", successResponse);
+          }
         }, error: (errorResponse) => {
+          this.authService.isLoggedIn = false;
           console.log(errorResponse);
         }
       })
     }
   }
 
-  userInfo() {
-    this.authService.getuserinfos().subscribe(response => {
-      console.log('response', response);
+  getUserInfo() {
+    let token = this.localStorage.getItem("token");
+    if (token != null) {    
+      this.authService.getuserinfos().subscribe(response => {
+      this.userInfo = response.data;
+      console.log(response.data, token, 'token var');
     })
+    } else {
+      console.log('token yok');
+    }
+  }
+
+  getCurrentUser() {
+    this.currentUser = this.authService.getUser()!;
+    console.log(this.currentUser, 'bulduk');
   }
 
   // userInfo() {

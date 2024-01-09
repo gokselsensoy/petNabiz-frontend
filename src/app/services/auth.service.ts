@@ -1,9 +1,8 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { LoginModel } from '../models/entities/loginModel';
-import { Observable, tap } from 'rxjs';
+import { BehaviorSubject, Observable } from 'rxjs';
 import { SingleResponseModel } from '../models/responses/singleResponseModel';
-import { User } from '../models/entities/user';
 import { RegisterModel } from '../models/entities/registerModel';
 import { ConfirmCode } from '../models/entities/confirmCodeModel';
 import { ListResponseModel } from '../models/responses/listResponseModel';
@@ -11,6 +10,7 @@ import { UserInfo } from '../models/entities/userInfo';
 import { JwtHelperService } from '@auth0/angular-jwt';
 import { LocalStorageService } from './local-storage.service';
 import { TokenModel } from '../models/entities/tokenModel';
+import { UserForLogin } from '../models/entities/userForLogin';
 
 @Injectable({
   providedIn: 'root'
@@ -22,19 +22,33 @@ export class AuthService {
 
   constructor(private httpClient: HttpClient, private jwtHelper: JwtHelperService, private localStorage: LocalStorageService) { }
 
-  public getToken(): string | null {
-    return localStorage.getItem('token');
+  private loggedIn = new BehaviorSubject<boolean>(this.isTokenExpired());
+
+  public get loginStatus() {
+    return this.loggedIn.asObservable();
   }
 
-  public isAuthenticated(): boolean {
-    const token = this.getToken();
+  public get isLoggedIn() {
+    return this.loggedIn.getValue();
+  }
 
-    if (token) {
+  public set isLoggedIn(status: boolean) {
+    this.loggedIn.next(status);
+  }
+
+  private isTokenExpired(): boolean {
+    let token = this.getToken();
+    if (token !=null) {
       return !this.jwtHelper.isTokenExpired(token);
     }
-
     return false;
   }
+
+  private getToken(): string | null {
+    return this.localStorage.getItem("token");
+  }
+
+
 
   login(user: LoginModel): Observable<SingleResponseModel<TokenModel>> {
     let newPath = this.apiUrl + 'login'
@@ -45,16 +59,6 @@ export class AuthService {
   register(newUser: RegisterModel): Observable<SingleResponseModel<TokenModel>> {
     let newPath = this.apiUrl + 'register'
     return this.httpClient.post<SingleResponseModel<TokenModel>>(newPath, newUser)
-      // .pipe(
-      //   tap(response => {
-      //     // Kayıt başarılı olduğunda JWT token'ını alıp localStorage'a ekleyin
-      //     if (response.success) {
-      //       localStorage.setItem('token', response.data.token);
-      //       // Kullanıcı bilgilerini isteğe bağlı olarak localStorage'a ekleyebilirsiniz
-      //       localStorage.setItem('userInfo', JSON.stringify(response.data));
-      //     }
-      //   })
-      // );
   }
 
   confirmCode(confirmCode: ConfirmCode): Observable<SingleResponseModel<ConfirmCode>> {
@@ -63,17 +67,47 @@ export class AuthService {
   }
 
 
-  //BURDAKİ İKİ REQUESTTEN DATA ALAMIYORUM
-  //BACKENDDE BAŞKA DENEMELER YAPTIM SONRA ESKİ HALİNE DÖNDÜRDÜM
-
   getregistermail(): Observable<string> {
     let newPath = this.apiUrl + 'registermail'
     return this.httpClient.get<string>(newPath)
   }
 
-  getuserinfos(): Observable<UserInfo> {
-    let newPath = this.apiUrl + 'getuserinfo'
-    return this.httpClient.get<UserInfo>(newPath);
+  getuserinfos(): Observable<ListResponseModel<UserInfo>> {
+      let newPath = this.apiUrl + 'getuserinfo'
+      return this.httpClient.get<ListResponseModel<UserInfo>>(newPath);
+
+}
+
+getUser(): UserForLogin | undefined {
+  let token = this.getToken();
+  if (token != null) {
+    let tokenDetails = Object.entries(this.jwtHelper.decodeToken(token));
+    let user: UserForLogin = new UserForLogin;
+    tokenDetails.forEach(detail => {
+      switch (detail[0]) {
+        case "email": {
+          user.email = String(detail[1]);
+          break;
+        }
+        case "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name": {
+          user.name = String(detail[1]);
+          break;
+        }
+        case "http://schemas.microsoft.com/ws/2008/06/identity/claims/role": {
+          user.roles = detail[1] as Array<string>
+          break;
+        }
+        case "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier": {
+          user.id = Number(detail[1]);
+        }
+      }
+    });
+    if (!user.roles) {  //if the user does not have a role
+      user.roles = [];
+    }
+    return user;
+  }
+  return undefined;
 }
 
 

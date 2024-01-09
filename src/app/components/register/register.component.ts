@@ -11,6 +11,7 @@ import { AuthService } from 'src/app/services/auth.service';
 export class RegisterComponent implements OnInit{
   registerForm: FormGroup;
   confirmForm: FormGroup;
+  userInfo: any;
 
 
   constructor (

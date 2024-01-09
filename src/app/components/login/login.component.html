@@ -1,13 +1,22 @@
 <div>
   <form [formGroup]="loginForm">
 <div class="inputGroup">
-    <input type="email" formControlName="email">
+    <input type="username" formControlName="userName">
 </div>
 <div class="inputGroup">
     <input type="password" formControlName="password">
 </div>
 <button type="submit" (click)="login()">Giriş</button>
 </form>
+
+<div *ngFor="let info of userInfo">
+  <p> {{info.name}}</p>
+  <p> {{info.surname}}</p>
+  <p> {{info.userName}}</p>
+
+</div>
+
+
 
 
 
